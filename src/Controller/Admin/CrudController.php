@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
@@ -33,5 +35,16 @@ abstract class CrudController extends AbstractCrudController
         assert($adminUrlGenerator instanceof AdminUrlGenerator);
 
         return $adminUrlGenerator;
+    }
+
+    protected function getEntityManager(): EntityManagerInterface
+    {
+        $doctrine = $this->container->get('doctrine');
+        assert($doctrine instanceof ManagerRegistry);
+
+        $result = $doctrine->getManager();
+        assert($result instanceof EntityManagerInterface);
+
+        return $result;
     }
 }

@@ -45,7 +45,7 @@ final class SurveyQuestionResultsBuilder
     public function addEmptyAnswerOption(QuestionOption $questionOption): void
     {
         $question = $questionOption->getQuestion();
-        $questionLabel = $question->getText();
+        $questionLabel = $questionOption->getLabel();
         $questionData = $this->results[$question->getId()]
             ?? $this->createEmptyQuestionData($question);
         $count = $questionData['answersCount'][$questionLabel] ?? 0;
@@ -59,13 +59,16 @@ final class SurveyQuestionResultsBuilder
      */
     public function build(): array
     {
-        return array_map(
-            static fn (array $questionData): SurveyQuestionResult => new SurveyQuestionResult(
+        $results = [];
+        foreach ($this->results as $key => $questionData) {
+            arsort($questionData['answersCount']);
+            $results[$key] = new SurveyQuestionResult(
                 question: $questionData['question'],
                 answersCount: $questionData['answersCount'],
-            ),
-            $this->results,
-        );
+            );
+        }
+
+        return $results;
     }
 
     /**

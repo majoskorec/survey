@@ -6,7 +6,9 @@ namespace App\Controller\Admin;
 
 use App\Entity\Question;
 use App\Entity\Survey;
+use App\Model\FlashType;
 use App\Model\SurveyStatus;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -17,6 +19,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Override;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -62,6 +66,7 @@ final class SurveyCrudController extends CrudController
                 ),
             ChoiceField::new('status')
                 ->setColumns('col-12')
+                ->formatValue(static fn (SurveyStatus $status): string => $status->asBadge())
                 ->hideWhenCreating(),
             CollectionField::new('questions')
                 ->useEntryCrudForm(QuestionCrudController::class)
@@ -90,9 +95,32 @@ final class SurveyCrudController extends CrudController
     #[Override]
     public function configureActions(Actions $actions): Actions
     {
+        $manageParticipants = Action::new('manageParticipants')
+            ->setLabel('Manage Participants')
+            ->linkToRoute(
+                'admin_participants_on_survey_index',
+                static fn (Survey $survey): array => ['surveyId' => $survey->getId()],
+            );
+
         $actions = parent::configureActions($actions);
         $actions->remove(Crud::PAGE_NEW, Action::SAVE_AND_ADD_ANOTHER);
         $actions->add(Crud::PAGE_NEW, Action::SAVE_AND_CONTINUE);
+        $actions->add(Crud::PAGE_INDEX, $manageParticipants);
+        $actions->add(
+            Crud::PAGE_INDEX,
+            Action::new('publish')
+                ->asPrimaryAction()
+                ->displayIf(static fn (Survey $survey): bool => $survey->getStatus() === SurveyStatus::DRAFT)
+                ->linkToCrudAction('publishSurvey'),
+        );
+        $actions->add(
+            Crud::PAGE_INDEX,
+            Action::new('close')
+                ->asDangerAction()
+                ->displayIf(static fn (Survey $survey): bool => $survey->getStatus() === SurveyStatus::PUBLISHED)
+                ->linkToCrudAction('closeSurvey'),
+        );
+        $actions->add(Crud::PAGE_EDIT, $manageParticipants);
 
         return $actions;
     }
@@ -106,5 +134,35 @@ final class SurveyCrudController extends CrudController
         $filters->add('status');
 
         return $filters;
+    }
+
+    #[AdminRoute(path: '/{entityId}/close', name: 'publish_close')]
+    public function closeSurvey(
+        #[MapEntity(id: 'entityId')]
+        Survey $survey,
+    ): Response {
+        $survey->close();
+
+        $entityManager = $this->getEntityManager();
+        $entityManager->flush();
+
+        $this->addFlash(FlashType::SUCCESS->value, 'Survey was closed successfully.');
+
+        return $this->redirectToRoute('admin_survey_index');
+    }
+
+    #[AdminRoute(path: '/{entityId}/publish', name: 'publish_survey')]
+    public function publishSurvey(
+        #[MapEntity(id: 'entityId')]
+        Survey $survey,
+    ): Response {
+        $survey->publish();
+
+        $entityManager = $this->getEntityManager();
+        $entityManager->flush();
+
+        $this->addFlash(FlashType::SUCCESS->value, 'Survey was published successfully.');
+
+        return $this->redirectToRoute('admin_survey_index');
     }
 }

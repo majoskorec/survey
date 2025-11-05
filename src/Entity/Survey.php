@@ -94,6 +94,16 @@ class Survey extends AdminEntity
         $this->status = $status;
     }
 
+    public function publish(): void
+    {
+        $this->status = SurveyStatus::PUBLISHED;
+    }
+
+    public function close(): void
+    {
+        $this->status = SurveyStatus::CLOSED;
+    }
+
     /**
      * @return Collection<int, Question>
      */

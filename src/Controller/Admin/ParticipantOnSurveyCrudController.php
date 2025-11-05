@@ -12,7 +12,6 @@ use App\Model\ParticipantOnSurveyDto;
 use App\Model\SurveyParticipantStatus;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
-use Doctrine\Persistence\ManagerRegistry;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
@@ -29,6 +28,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Override;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -102,42 +102,68 @@ final class ParticipantOnSurveyCrudController extends CrudController
         $actions->remove(Crud::PAGE_INDEX, Action::DELETE);
         $actions->remove(Crud::PAGE_INDEX, Action::EDIT);
 
-        $toSurveys = Action::new('toAllSurveys')
-            ->linkToRoute('admin_survey_index')
-            ->createAsGlobalAction();
-        $actions->add(Crud::PAGE_INDEX, $toSurveys);
-
-        $toSurveyEdit = Action::new('toSurveyEdit')
+        $toSurveyEdit = Action::new('backToSurveyEdit')
             ->linkToRoute('admin_survey_edit', ['entityId' => $surveyId])
+            ->asWarningAction()
             ->createAsGlobalAction();
         $actions->add(Crud::PAGE_INDEX, $toSurveyEdit);
 
         $actions->addBatchAction(
             Action::new('sendLinks')
                 ->asWarningAction()
-                ->linkToRoute('admin_participants_on_survey_send_links', ['surveyId' => $surveyId])
+                ->linkToRoute('admin_participants_on_survey_send_batch', ['surveyId' => $surveyId])
                 ->setIcon('fa fa-envelope-o'),
         );
 
         $actions->addBatchAction(
             Action::new('addToSurvey')
                 ->asDefaultAction()
-                ->linkToRoute('admin_participants_on_survey_add_to_survey', ['surveyId' => $surveyId])
+                ->linkToRoute('admin_participants_on_survey_add_batch', ['surveyId' => $surveyId])
                 ->setIcon('fa fa-user-check'),
         );
 
-        $delete = Action::new('deleteParticipant', false, 'fa fa-trash')
-            ->asDangerAction()
-            ->linkToRoute(
-                'admin_participants_on_survey_delete_participant',
-                static fn (ParticipantOnSurveyDto $dto): array => [
-                    'id' => $dto->surveyParticipantId,
-                    'surveyId' => $surveyId,
-                ],
-            )
-            ->displayIf(static fn (ParticipantOnSurveyDto $dto): bool => $dto->surveyParticipantId !== null);
+        $actions->add(
+            Crud::PAGE_INDEX,
+            Action::new('deleteParticipant', false, 'fa fa-trash')
+                ->asDangerAction()
+                ->linkToRoute(
+                    'admin_participants_on_survey_delete_participant',
+                    static fn (ParticipantOnSurveyDto $dto): array => [
+                        'id' => $dto->surveyParticipantId,
+                        'surveyId' => $surveyId,
+                    ],
+                )
+                ->displayIf(static fn (ParticipantOnSurveyDto $dto): bool => $dto->surveyParticipantId !== null),
+        );
 
-        $actions->add(Crud::PAGE_INDEX, $delete);
+        $actions->add(
+            Crud::PAGE_INDEX,
+            Action::new('add')
+                ->linkToRoute(
+                    'admin_participants_on_survey_add',
+                    static fn (ParticipantOnSurveyDto $dto): array => [
+                        'participantId' => $dto->participant->getId(),
+                        'surveyId' => $surveyId,
+                    ],
+                )
+                ->displayIf(static fn (ParticipantOnSurveyDto $dto): bool => $dto->surveyParticipantId === null),
+        );
+
+        $actions->add(
+            Crud::PAGE_INDEX,
+            Action::new('send')
+                ->linkToRoute(
+                    'admin_participants_on_survey_send',
+                    static fn (ParticipantOnSurveyDto $dto): array => [
+                        'id' => $dto->surveyParticipantId,
+                        'surveyId' => $surveyId,
+                    ],
+                )
+                ->displayIf(
+                    static fn (ParticipantOnSurveyDto $dto): bool => $dto->surveyParticipantId !== null
+                        && $dto->status === SurveyParticipantStatus::CREATED,
+                ),
+        );
 
         return $actions;
     }
@@ -172,37 +198,40 @@ final class ParticipantOnSurveyCrudController extends CrudController
         return $crud;
     }
 
-    #[AdminRoute(path: '/{surveyId}/send', name: 'send_links')]
-    public function sendLinks(BatchActionDto $batchActionDto, int $surveyId): Response
-    {
-        $doctrine = $this->container->get('doctrine');
-        assert($doctrine instanceof ManagerRegistry);
-        $entityManager = $doctrine->getManager();
+    #[AdminRoute(path: '/{surveyId}/add/{participantId}', name: 'add')]
+    public function add(
+        #[MapEntity(id: 'surveyId')]
+        Survey $survey,
+        int $participantId,
+    ): Response {
+        return $this->addIds($survey, [$participantId]);
+    }
 
-        $surveyParticipantRepository = $entityManager->getRepository(SurveyParticipant::class);
+    #[AdminRoute(path: '/{id}/send', name: 'send')]
+    public function send(SurveyParticipant $surveyParticipant): Response
+    {
+        return $this->sendIds(
+            $surveyParticipant->getSurvey()->getId(),
+            [
+                $surveyParticipant->getParticipant()->getId(),
+            ],
+        );
+    }
+
+    #[AdminRoute(path: '/{surveyId}/send-batch', name: 'send_batch')]
+    public function sendBatch(BatchActionDto $batchActionDto, int $surveyId): Response
+    {
         /** @var array<int> $ids */
         $ids = $batchActionDto->getEntityIds();
-        $surveyParticipants = $surveyParticipantRepository->findBySurveyIdAndParticipantIdsNotSend(
-            $surveyId,
-            $ids,
-        );
 
-        foreach ($surveyParticipants as $surveyParticipant) {
-            $this->sendLinkMail->send($surveyParticipant);
-            $surveyParticipant->send();
-            $entityManager->flush();
-        }
-
-        return $this->redirectToRoute('admin_participants_on_survey_index', ['surveyId' => $surveyId]);
+        return $this->sendIds($surveyId, $ids);
     }
 
     #[AdminRoute(path: '/participant/{id}/delete', name: 'delete_participant')]
     public function deleteParticipantOnSurvey(int $id): Response
     {
         $surveyId = $this->getSurveyId();
-        $doctrine = $this->container->get('doctrine');
-        assert($doctrine instanceof ManagerRegistry);
-        $entityManager = $doctrine->getManager();
+        $entityManager = $this->getEntityManager();
 
         $surveyParticipant = $entityManager->getRepository(SurveyParticipant::class)->find($id);
         if ($surveyParticipant && $surveyParticipant->getSurvey()->getId() === $surveyId) {
@@ -213,27 +242,53 @@ final class ParticipantOnSurveyCrudController extends CrudController
         return $this->redirectToRoute('admin_participants_on_survey_index', ['surveyId' => $this->getSurveyId()]);
     }
 
-    #[AdminRoute(path: '/{surveyId}/add-to-survey', name: 'add_to_survey')]
-    public function addToSurvey(BatchActionDto $batchActionDto, int $surveyId): Response
-    {
-        $doctrine = $this->container->get('doctrine');
-        assert($doctrine instanceof ManagerRegistry);
-        $entityManager = $doctrine->getManager();
-
-        $survey = $entityManager->getRepository(Survey::class)->find($surveyId);
-        if (!$survey instanceof Survey) {
-            throw $this->createNotFoundException('Survey not found');
-        }
-
-        $participantRepository = $entityManager->getRepository(Participant::class);
+    #[AdminRoute(path: '/{surveyId}/add-batch', name: 'add_batch')]
+    public function addBatch(
+        BatchActionDto $batchActionDto,
+        #[MapEntity(id: 'surveyId')]
+        Survey $survey,
+    ): Response {
         /** @var array<int> $ids */
         $ids = $batchActionDto->getEntityIds();
-        $participants = $participantRepository->findNotInSurvey($surveyId, $ids);
+
+        return $this->addIds($survey, $ids);
+    }
+
+    /**
+     * @param array<int> $ids
+     */
+    private function addIds(Survey $survey, array $ids): Response
+    {
+        $entityManager = $this->getEntityManager();
+
+        $participantRepository = $entityManager->getRepository(Participant::class);
+        $participants = $participantRepository->findNotInSurvey($survey->getId(), $ids);
         foreach ($participants as $participant) {
             $surveyParticipant = SurveyParticipant::createNew($survey, $participant);
             $entityManager->persist($surveyParticipant);
         }
         $entityManager->flush();
+
+        return $this->redirectToRoute('admin_participants_on_survey_index', ['surveyId' => $survey->getId()]);
+    }
+
+    /**
+     * @param array<int> $ids
+     */
+    private function sendIds(int $surveyId, array $ids): Response
+    {
+        $entityManager = $this->getEntityManager();
+        $surveyParticipantRepository = $entityManager->getRepository(SurveyParticipant::class);
+        $surveyParticipants = $surveyParticipantRepository->findBySurveyIdAndParticipantIdsNotSend(
+            $surveyId,
+            $ids,
+        );
+
+        foreach ($surveyParticipants as $surveyParticipant) {
+            $this->sendLinkMail->send($surveyParticipant);
+            $surveyParticipant->send();
+            $entityManager->flush();
+        }
 
         return $this->redirectToRoute('admin_participants_on_survey_index', ['surveyId' => $surveyId]);
     }
@@ -253,9 +308,8 @@ final class ParticipantOnSurveyCrudController extends CrudController
 
     private function getSurveyTitle(): string
     {
-        $doctrine = $this->container->get('doctrine');
-        assert($doctrine instanceof ManagerRegistry);
-        $survey = $doctrine->getRepository(Survey::class)->find($this->getSurveyId());
+        $entityManager = $this->getEntityManager();
+        $survey = $entityManager->getRepository(Survey::class)->find($this->getSurveyId());
 
         return $survey?->getTitle() ?? '';
     }

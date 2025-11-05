@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Entity\QuestionOption;
+use App\Entity\Survey;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -34,12 +35,18 @@ final class QuestionOptionCrudController extends CrudController
     #[Override]
     public function configureFields(string $pageName): iterable
     {
+        $urlGenerator = $this->getAdminUrlGenerator();
+
         return [
             IdField::new('id')
                 ->hideOnForm(),
-            AssociationField::new('question.survey', 'Survey')
-                ->setCrudController(SurveyCrudController::class)
-                ->setTemplatePath('admin/crud/field/association_link_to_index_filter.html.twig')
+            TextField::new('question.survey', 'Survey')
+                ->formatValue(static function (Survey $survey) use ($urlGenerator): string {
+                    $url = $urlGenerator->setController(SurveyCrudController::class)
+                        ->setEntityId($survey->getId())->generateUrl();
+
+                    return sprintf('<a href="%s">%s</a>', $url, $survey);
+                })
                 ->hideOnForm()
                 ->setColumns('col-12'),
             AssociationField::new('question')
