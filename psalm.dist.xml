@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<psalm
+    errorLevel="1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+    autoloader="./vendor/autoload.php"
+>
+    <projectFiles>
+        <ignoreFiles allowMissingFiles="true">
+            <directory name="var"/>
+            <directory name="vendor"/>
+            <directory name="tests"/>
+            <file name="public/index.php"/>
+        </ignoreFiles>
+        <directory name="."/>
+    </projectFiles>
+    <issueHandlers>
+        <MixedAssignment errorLevel="suppress"/>
+        <MissingConstructor errorLevel="suppress"/>
+        <UnusedClass errorLevel="suppress"/>
+        <PossiblyUnusedMethod errorLevel="suppress"/>
+        <PossiblyUnusedProperty errorLevel="suppress"/>
+        <PropertyNotSetInConstructor errorLevel="suppress"/>
+        <UnusedParam errorLevel="suppress"/>
+        <UnusedProperty errorLevel="suppress"/>
+        <ClassMustBeFinal>
+            <errorLevel type="suppress">
+                <directory name="src/Entity"/>
+            </errorLevel>
+        </ClassMustBeFinal>
+    </issueHandlers>
+
+    <plugins>
+        <pluginClass class="Psalm\SymfonyPsalmPlugin\Plugin"/>
+        <pluginClass class="Weirdan\DoctrinePsalmPlugin\Plugin"/>
+    </plugins>
+</psalm>

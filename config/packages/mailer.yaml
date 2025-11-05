@@ -1,3 +1,8 @@
 framework:
     mailer:
         dsn: '%env(MAILER_DSN)%'
+        message_bus: false
+        envelope:
+            sender: no-reply@trauma-kramare.sk
+        headers:
+            From: 'Trauma Kramare <no-reply@trauma-kramare.sk>'

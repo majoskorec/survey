@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+    <div
+        class="d-flex flex-row justify-content-between align-items-end mb-3"
+    >
+        <div
+            class="fs-1"
+        >
+            Výsledky
+        </div>
+
+        <div
+            class="fs-2 mx-2"
+        >
+            {{ survey.title }}
+        </div>
+        <div
+            class="fs-6"
+        >
+            účasť: {{ result.answers }} / {{ result.invited }}
+        </div>
+    </div>
+
+    <div>
+        {% for question in result.results %}
+            <div
+                class="card mb-2"
+            >
+                <div class="card-header">
+                    {{ question.question }}
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for answer, count in question.answersCount %}
+                        <li class="list-group-item">
+                            {{ answer }}: {{ count }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

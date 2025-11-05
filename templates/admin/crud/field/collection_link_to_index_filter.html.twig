@@ -1,0 +1,22 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+{% if field.value.count > 0 %}
+    {% set parent_name = field.customOptions.get('parentName') %}
+    {% set url = ea_url().unsetAll().setController(
+            field.customOptions.get('entryCrudControllerFqcn'),
+        ).setAction(
+            'index',
+        ).set(
+            'filters[' ~ parent_name ~ '][comparison]',
+            '=',
+        ).set(
+            'filters[' ~ parent_name ~ '][value]',
+            entity.primaryKeyValue,
+        ).generateUrl() %}
+    <a href="{{ url }}">
+        <span class="badge badge-secondary">
+            {{ field.value.count }}
+        </span>
+    </a>
+{% endif %}

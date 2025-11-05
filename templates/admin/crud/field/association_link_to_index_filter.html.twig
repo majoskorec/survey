@@ -1,0 +1,21 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+{% if 'toMany' == field.customOptions.get('associationType') %}
+    <span class="badge badge-secondary">{{ field.formattedValue }}</span>
+{% else %}
+    {% set url = ea_url().unsetAll().setController(
+            field.customOptions.get('crudControllerFqcn'),
+        ).setAction(
+            'index',
+        ).set(
+            'filters[id][comparison]',
+            '=',
+        ).set(
+            'filters[id][value]',
+            field.value.id,
+        ).generateUrl() %}
+    <a href="{{ url }}">
+        {{ field.formattedValue }}
+    </a>
+{% endif %}

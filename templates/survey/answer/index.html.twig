@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+    <h1>
+        Odpovedať na dotazník
+    </h1>
+    <h2>
+        {{ survey.title }}
+        <a
+            href="{{ path(constant('App\\Controller\\Survey\\ResultController::ROUTE_NAME'), {
+                slug: survey.slug,
+            }) }}"
+            class="h6 float-end"
+        >
+            Zobraziť výsledky
+        </a>
+    </h2>
+    <div>
+        {{ form(form) }}
+    </div>
+{% endblock %}

@@ -1,12 +1,18 @@
 # see https://symfony.com/doc/current/reference/configuration/framework.html
 framework:
+    csrf_protection: true
     secret: '%env(APP_SECRET)%'
 
     # Note that the session will be started ONLY if you read or write from it.
-    session: true
+    session:
+        handler_id: Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
 
     #esi: true
     #fragments: true
+
+    form:
+        csrf_protection:
+            enabled: true
 
 when@test:
     framework:

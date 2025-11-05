@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+    <h1>
+        Dotazníky
+    </h1>
+    <table
+        class="table"
+    >
+        <thead>
+            <tr>
+                <th>
+                    Názov
+                </th>
+                <th>
+                    Status
+                </th>
+                <th>
+                    Výsledky
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for survey in surveys %}
+            <tr>
+                <td>
+                    {{ survey.title }}
+                </td>
+                <td>
+                    {{ survey.status.value }}
+                </td>
+                <td>
+                    <a
+                        href="{{ path(constant('App\\Controller\\Survey\\ResultController::ROUTE_NAME'), {
+                            slug: survey.slug,
+                        }) }}"
+                    >
+                        Zobraziť výsledky
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

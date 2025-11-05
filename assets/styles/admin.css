@@ -1,0 +1,35 @@
+:root {
+    --drag-width: 1.75rem;
+}
+
+.accordion-header .drag-handle {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 999;                 /* nad obsahom buttonu */
+    cursor: grab;
+    user-select: none;
+    opacity: .7;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(var(--bs-accordion-btn-padding-x) + var(--drag-width));
+    height: 100%;
+    pointer-events: auto;
+    touch-action: none;
+
+    &:hover {
+        opacity:1;
+        cursor: grabbing;
+    }
+    &:active {
+        cursor: grabbing;
+    }
+}
+
+.accordion-header .accordion-button.with-drag-handle {
+    padding-left: calc(var(--bs-accordion-btn-padding-x) + var(--drag-width)) !important;
+    width: calc(100% - var(--drag-width));
+}

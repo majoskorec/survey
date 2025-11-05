@@ -1,0 +1,15 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+{% set url = ea_url().unsetAll().setRoute(
+        'admin_participants_on_survey_index',
+        {
+            surveyId: entity.primaryKeyValue,
+        },
+    ).generateUrl()
+%}
+<a href="{{ url }}">
+    <span class="badge badge-secondary">
+        {{ field.value.count }}
+    </span>
+</a>
