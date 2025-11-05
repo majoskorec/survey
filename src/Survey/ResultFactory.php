@@ -60,14 +60,17 @@ final class ResultFactory
 
     /**
      * @param Collection<int, Question> $questions
-     * @param string|array<string> $participantAnswer
+     * @param string|array<string>|null $participantAnswer
      */
     private function processParticipantAnswer(
         string $questionName,
         Collection $questions,
         SurveyQuestionResultsBuilder $surveyQuestionResultsBuilder,
-        string|array $participantAnswer,
+        string|array|null $participantAnswer,
     ): void {
+        if ($participantAnswer === null) {
+            return;
+        }
         try {
             $name = SurveyQuestionFormFieldName::fromName($questionName);
         } catch (InvalidArgumentException) {
