@@ -4,18 +4,37 @@
     <h1>
         Odpovedať na dotazník
     </h1>
-    <h2>
-        {{ survey.title }}
-        <a
-            href="{{ path(constant('App\\Controller\\Survey\\ResultController::ROUTE_NAME'), {
-                slug: survey.slug,
-            }) }}"
-            class="h6 float-end"
-        >
-            Zobraziť výsledky
-        </a>
-    </h2>
+    <hr />
+    <div class="row mb-4">
+        <div class="col-auto h2">
+            {{ survey.title }}
+        </div>
+        <div class="col-auto ms-auto">
+            <a
+                href="{{ path(constant('App\\Controller\\Survey\\ResultController::ROUTE_NAME'), {
+                    slug: survey.slug,
+                }) }}"
+                class="h6 float-end"
+            >
+                Zobraziť výsledky
+            </a>
+        </div>
+    </div>
     <div>
-        {{ form(form) }}
+        {{ form_start(form) }}
+        {% for field in form.children %}
+            {% if loop.index0 < survey.questions.count %}
+                <div class="card mb-3">
+                    <div class="card-header">
+                        {{ form_label(field) }}
+                    </div>
+                    <div class="card-body">
+                        {{ form_widget(field) }}
+                        {{ form_errors(field) }}
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+        {{ form_rest(form) }}
     </div>
 {% endblock %}
