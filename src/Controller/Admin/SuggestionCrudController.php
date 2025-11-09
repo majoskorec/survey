@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Entity\Suggestion;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
@@ -38,12 +37,5 @@ final class SuggestionCrudController extends CrudController
             DateTimeField::new('createdAt')
                 ->onlyOnIndex(),
         ];
-    }
-
-    #[Override]
-    public function configureCrud(Crud $crud): Crud
-    {
-        return $crud
-            ->setDefaultSort(['createdAt' => 'DESC']);
     }
 }

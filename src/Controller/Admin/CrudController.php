@@ -22,6 +22,7 @@ abstract class CrudController extends AbstractCrudController
     {
         $crud = parent::configureCrud($crud);
         $crud->showEntityActionsInlined();
+        $crud->setDefaultSort(['id' => 'DESC']);
 
         return $crud;
     }

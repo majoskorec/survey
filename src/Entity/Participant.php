@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use App\Repository\ParticipantRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Override;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ParticipantRepository::class)]
@@ -41,5 +42,11 @@ class Participant extends AdminEntity
     public function setName(string $name): void
     {
         $this->name = $name;
+    }
+
+    #[Override]
+    public function __toString(): string
+    {
+        return $this->name;
     }
 }

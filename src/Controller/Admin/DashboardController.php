@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Entity\Incident;
 use App\Entity\Participant;
 use App\Entity\Question;
 use App\Entity\QuestionOption;
@@ -52,6 +53,7 @@ final class DashboardController extends AbstractDashboardController
             MenuItem::section('Participant'),
             MenuItem::linkToCrud('Participant', 'fas fa-list', Participant::class)
                 ->setController(ParticipantCrudController::class),
+            MenuItem::linkToCrud('Incident', 'fa-solid fa-heart-crack', Incident::class),
             MenuItem::section('Survey'),
             MenuItem::linkToCrud('Survey', 'fas fa-list', Survey::class),
             MenuItem::linkToCrud('Question', 'fas fa-list', Question::class),
