@@ -17,6 +17,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\SlugField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Override;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -64,6 +65,9 @@ final class SurveyCrudController extends CrudController
                 ->setUnlockConfirmationMessage(
                     'It is highly recommended to use the automatic slugs, but you can customize them',
                 ),
+            TextareaField::new('infoText')
+                ->setFormTypeOption('empty_data', '')
+                ->setColumns('col-12'),
             ChoiceField::new('status')
                 ->setColumns('col-12')
                 ->formatValue(static fn (SurveyStatus $status): string => $status->asBadge())
@@ -120,6 +124,13 @@ final class SurveyCrudController extends CrudController
                 ->displayIf(static fn (Survey $survey): bool => $survey->getStatus() === SurveyStatus::PUBLISHED)
                 ->linkToCrudAction('closeSurvey'),
         );
+        $actions->add(
+            Crud::PAGE_INDEX,
+            Action::new('hide')
+                ->asDangerAction()
+                ->displayIf(static fn (Survey $survey): bool => $survey->getStatus() === SurveyStatus::CLOSED)
+                ->linkToCrudAction('hideSurvey'),
+        );
         $actions->add(Crud::PAGE_EDIT, $manageParticipants);
 
         return $actions;
@@ -147,6 +158,21 @@ final class SurveyCrudController extends CrudController
         $entityManager->flush();
 
         $this->addFlash(FlashType::SUCCESS->value, 'Survey was closed successfully.');
+
+        return $this->redirectToRoute('admin_survey_index');
+    }
+
+    #[AdminRoute(path: '/{entityId}/hide', name: 'publish_hide')]
+    public function hideSurvey(
+        #[MapEntity(id: 'entityId')]
+        Survey $survey,
+    ): Response {
+        $survey->hide();
+
+        $entityManager = $this->getEntityManager();
+        $entityManager->flush();
+
+        $this->addFlash(FlashType::SUCCESS->value, 'Survey was hidden successfully.');
 
         return $this->redirectToRoute('admin_survey_index');
     }

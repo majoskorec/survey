@@ -6,8 +6,9 @@ namespace App\Mail;
 
 use App\Controller\Survey\ParticipantAnswerController;
 use App\Entity\SurveyParticipant;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class SendLinkMail
@@ -21,15 +22,20 @@ final class SendLinkMail
     public function send(SurveyParticipant $surveyParticipant): void
     {
         $email = $surveyParticipant->getParticipant()->getEmail();
-        $message = new Email();
-        $message->to($email);
-        $message->subject('Your survey link');
+        $name = $surveyParticipant->getParticipant()->getName();
+        $message = new TemplatedEmail();
+        $message->to(new Address($email, $name));
+        $message->subject('Link na dotazník');
+        $message->htmlTemplate('survey/mail/invite_link.html.twig');
         $link = $this->urlGenerator->generate(
             ParticipantAnswerController::ROUTE_NAME,
             ['linkToken' => $surveyParticipant->getLinkToken()],
             UrlGeneratorInterface::ABSOLUTE_URL,
         );
-        $message->text($link);
+        $message->context([
+            'link' => $link,
+            'text' => $surveyParticipant->getSurvey()->getInfoText(),
+        ]);
         $this->mailer->send($message);
     }
 }

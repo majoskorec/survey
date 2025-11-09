@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Controller\Survey;
 
+use App\Controller\Controller;
 use App\Entity\Survey;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-final class ListController extends AbstractController
+final class ListController extends Controller
 {
     public const string ROUTE_NAME = 'app_survey_list';
 

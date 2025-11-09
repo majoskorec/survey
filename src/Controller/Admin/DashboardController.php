@@ -7,6 +7,7 @@ namespace App\Controller\Admin;
 use App\Entity\Participant;
 use App\Entity\Question;
 use App\Entity\QuestionOption;
+use App\Entity\Suggestion;
 use App\Entity\Survey;
 use App\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
@@ -55,6 +56,8 @@ final class DashboardController extends AbstractDashboardController
             MenuItem::linkToCrud('Survey', 'fas fa-list', Survey::class),
             MenuItem::linkToCrud('Question', 'fas fa-list', Question::class),
             MenuItem::linkToCrud('QuestionOption', 'fas fa-list', QuestionOption::class),
+            MenuItem::section('Suggestion'),
+            MenuItem::linkToCrud('Suggestion', 'fa-regular fa-lightbulb', Suggestion::class),
         ];
     }
 

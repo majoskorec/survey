@@ -9,6 +9,7 @@ enum SurveyStatus: string
     case DRAFT = 'draft';
     case PUBLISHED = 'published';
     case CLOSED = 'closed';
+    case HIDDEN = 'hidden';
 
     public function asBadge(): string
     {
@@ -16,6 +17,7 @@ enum SurveyStatus: string
             self::DRAFT => 'warning',
             self::PUBLISHED => 'success',
             self::CLOSED => 'secondary',
+            self::HIDDEN => 'dark',
         };
 
         return sprintf('<span class="badge text-bg-%s">%s</span>', $class, $this->value);

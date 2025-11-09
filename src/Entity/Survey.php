@@ -27,6 +27,9 @@ class Survey extends AdminEntity
     #[ORM\Column(type: Types::STRING, length: 255, unique: true)]
     private string $slug = '';
 
+    #[ORM\Column(type: Types::TEXT, nullable: false)]
+    private string $infoText = '';
+
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 16, enumType: SurveyStatus::class)]
     private SurveyStatus $status;
@@ -104,6 +107,11 @@ class Survey extends AdminEntity
         $this->status = SurveyStatus::CLOSED;
     }
 
+    public function hide(): void
+    {
+        $this->status = SurveyStatus::HIDDEN;
+    }
+
     /**
      * @return Collection<int, Question>
      */
@@ -139,6 +147,16 @@ class Survey extends AdminEntity
     public function getSurveyParticipants(): Collection
     {
         return $this->surveyParticipants;
+    }
+
+    public function getInfoText(): string
+    {
+        return $this->infoText;
+    }
+
+    public function setInfoText(string $infoText): void
+    {
+        $this->infoText = $infoText;
     }
 
     #[Override]
