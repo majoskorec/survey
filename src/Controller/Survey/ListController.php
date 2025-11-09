@@ -9,7 +9,9 @@ use App\Entity\Survey;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('ROLE_USER')]
 final class ListController extends Controller
 {
     public const string ROUTE_NAME = 'app_survey_list';

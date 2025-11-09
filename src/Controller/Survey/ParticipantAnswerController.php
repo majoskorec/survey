@@ -54,9 +54,7 @@ final class ParticipantAnswerController extends AbstractController
 
             $this->addFlash(FlashType::SUCCESS->value, 'Ďakujeme za vyplnenie dotazníka.');
 
-            return $this->redirectToRoute(ResultController::ROUTE_NAME, [
-                'slug' => $surveyParticipant->getSurvey()->getSlug(),
-            ]);
+            return $this->redirectToRoute(DefaultController::ROUTE_NAME);
         }
 
         return $this->render('survey/answer/index.html.twig', [

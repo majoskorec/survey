@@ -9,16 +9,18 @@
         <div class="col-auto h2">
             {{ survey.title }}
         </div>
-        <div class="col-auto ms-auto">
-            <a
-                href="{{ path(constant('App\\Controller\\Survey\\ResultController::ROUTE_NAME'), {
-                    slug: survey.slug,
-                }) }}"
-                class="h6 float-end"
-            >
-                Zobraziť výsledky
-            </a>
-        </div>
+        {% if is_granted('ROLE_USER') %}
+            <div class="col-auto ms-auto">
+                <a
+                    href="{{ path(constant('App\\Controller\\Survey\\ResultController::ROUTE_NAME'), {
+                        slug: survey.slug,
+                    }) }}"
+                    class="h6 float-end"
+                >
+                    Zobraziť výsledky
+                </a>
+            </div>
+        {% endif %}
     </div>
     <div>
         {{ form_start(form) }}

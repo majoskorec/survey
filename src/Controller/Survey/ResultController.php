@@ -9,7 +9,9 @@ use App\Survey\ResultFactory;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('ROLE_USER')]
 final class ResultController extends AbstractController
 {
     public const string ROUTE_NAME = 'app_survey_result';
