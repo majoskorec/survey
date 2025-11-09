@@ -28,13 +28,10 @@ abstract class CrudController extends AbstractCrudController
 
     protected function getAdminUrlGenerator(): AdminUrlGenerator
     {
-        $adminUrlGenerator = $this->container->get(AdminUrlGenerator::class);
         /**
-         * @psalm-suppress RedundantCondition
+         * @psalm-suppress PrivateService
          */
-        assert($adminUrlGenerator instanceof AdminUrlGenerator);
-
-        return $adminUrlGenerator;
+        return $this->container->get(AdminUrlGenerator::class);
     }
 
     protected function getEntityManager(): EntityManagerInterface
