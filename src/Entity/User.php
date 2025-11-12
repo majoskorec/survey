@@ -16,12 +16,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-class User extends BaseEntity implements UserInterface, PasswordAuthenticatedUserInterface
+class User extends AdminEntity implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[Assert\Email]
     #[Assert\NotBlank]
     #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
-    private string $email = '';
+    private string $email;
 
     /**
      * @var list<string> The user roles
@@ -30,7 +30,7 @@ class User extends BaseEntity implements UserInterface, PasswordAuthenticatedUse
     private array $roles = [];
 
     #[ORM\Column(type: Types::STRING, nullable: false)]
-    private string $password = '';
+    private string $password;
 
     private ?string $plainPassword = null;
 

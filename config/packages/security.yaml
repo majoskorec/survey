@@ -9,22 +9,36 @@ security:
             entity:
                 class: App\Entity\User
                 property: email
+        app_participant_provider:
+            entity:
+                class: App\Entity\Participant
+                property: email
+        all_users:
+            chain:
+                providers: ['app_user_provider', 'app_participant_provider']
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
+            pattern: ^/
             lazy: true
-            provider: app_user_provider
+            provider: all_users
             form_login:
                 login_path: !php/const App\Controller\Security\LoginController::ROUTE_NAME
                 check_path: !php/const App\Controller\Security\LoginController::ROUTE_NAME
                 enable_csrf: true
+            login_link:
+                login_path: !php/const App\Controller\Security\LinkLoginController::ROUTE_NAME
+                check_route: !php/const App\Controller\Security\LinkLoginCheckController::ROUTE_NAME
+                signature_properties: ['id', 'email']
+                lifetime: 300
+                max_uses: 2
             logout:
                 path: !php/const App\Controller\Security\LogoutController::ROUTE_NAME
                 # where to redirect after logout
                 # target: app_any_route
-
+            entry_point: App\Security\EntryPoint
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
 

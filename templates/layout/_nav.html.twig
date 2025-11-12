@@ -30,19 +30,17 @@
             <ul
                 class="navbar-nav me-auto mb-0"
             >
-                {% if is_granted('ROLE_USER') %}
-                    <li
-                        class="nav-item"
+                <li
+                    class="nav-item"
+                >
+                    <a
+                        class="nav-link"
+                        aria-current="page"
+                        href="{{ path(constant('App\\Controller\\Survey\\ListController::ROUTE_NAME')) }}"
                     >
-                        <a
-                            class="nav-link"
-                            aria-current="page"
-                            href="{{ path(constant('App\\Controller\\Survey\\ListController::ROUTE_NAME')) }}"
-                        >
-                            <i class="fa-regular fa-lightbulb"></i> Dotazníky
-                        </a>
-                    </li>
-                {% endif %}
+                        <i class="fa-regular fa-lightbulb"></i> Dotazníky
+                    </a>
+                </li>
                 <li
                     class="nav-item"
                 >
@@ -56,17 +54,54 @@
                 </li>
             </ul>
             <ul class="navbar-nav ms-auto">
-                <li
-                    class="nav-item"
-                >
-                    <a
-                        class="nav-link active"
-                        aria-current="page"
-                        href="{{ path('admin') }}"
+                {% if is_granted('ROLE_ADMIN') %}
+                    <li
+                        class="nav-item"
                     >
-                        <i class="bi bi-gear"></i> Admin
-                    </a>
-                </li>
+                        <a
+                            class="nav-link active"
+                            aria-current="page"
+                            href="{{ path('admin') }}"
+                        >
+                            <i class="bi bi-gear"></i> Admin
+                        </a>
+                    </li>
+                    <li
+                        class="nav-item"
+                    >
+                        <a
+                            class="nav-link active"
+                            aria-current="page"
+                            href="{{ path(constant('App\\Controller\\Security\\LogoutController::ROUTE_NAME')) }}"
+                        >
+                            <i class="bi bi-box-arrow-right"></i> Odhlásiť sa
+                        </a>
+                    </li>
+                {% elseif is_granted('ROLE_USER') %}
+                    <li
+                        class="nav-item"
+                    >
+                        <a
+                            class="nav-link active"
+                            aria-current="page"
+                            href="{{ path(constant('App\\Controller\\Security\\LogoutController::ROUTE_NAME')) }}"
+                        >
+                            <i class="bi bi-box-arrow-right"></i> Odhlásiť sa
+                        </a>
+                    </li>
+                {% else %}
+                    <li
+                        class="nav-item"
+                    >
+                        <a
+                            class="nav-link active"
+                            aria-current="page"
+                            href="{{ path('admin') }}"
+                        >
+                            <i class="bi bi-gear"></i> Admin
+                        </a>
+                    </li>
+                {% endif %}
             </ul>
         </div>
     </div>
